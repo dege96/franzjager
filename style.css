@@ -31,13 +31,18 @@ body {
 
 .grattis-btn {
     font-size: 3.5rem;
-
+    padding: 1.5rem 3rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .grattis-btn:hover {
-    background: #37c7e0;
+    background: linear-gradient(135deg, #37c7e0, #2a9d8f);
     color: #fff;
-    transform: scale(1.05);
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 10px 30px rgba(55, 199, 224, 0.3);
 }
 
 /* Hide control panel and canvas by default, shown via JS */
@@ -219,20 +224,52 @@ body {
     box-shadow: 0 0 32px 0 rgba(255, 213, 79, 0.12), 0 2px 24px 0 rgba(0,0,0,0.18);
     letter-spacing: 2.5px;
     position: relative;
-    transition: background 0.3s, color 0.2s, box-shadow 0.2s, border 0.2s;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+    padding: 1.5rem 3rem;
+    border-radius: 12px;
 }
+
+.mystic-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 213, 79, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.mystic-btn:hover::before {
+    left: 100%;
+}
+
 .mystic-btn:hover {
     background: linear-gradient(135deg, #222 60%, #444 100%);
     color: #fff;
     border: 2px solid #ffd54f;
     box-shadow: 0 0 48px 0 #ffd54f44, 0 2px 32px 0 #000a;
+    transform: translateY(-2px);
 }
+
 .mystic-btn i {
     margin-right: 0.7em;
     color: #ffd54f;
     font-size: 1.2em;
     vertical-align: middle;
+    transition: transform 0.3s ease;
 }
+
+.mystic-btn:hover i {
+    transform: scale(1.2) rotate(10deg);
+}
+
 .mystery {
     color: #ffd54f;
     font-size: 1.2em;
@@ -240,8 +277,21 @@ body {
     animation: pulseMystery 1.2s infinite alternate;
     font-weight: bold;
     letter-spacing: 0.1em;
+    display: inline-block;
+    transition: transform 0.3s ease;
 }
+
+.mystic-btn:hover .mystery {
+    transform: scale(1.1);
+}
+
 @keyframes pulseMystery {
-    0% { text-shadow: 0 0 8px #ffd54f, 0 0 2px #fff; }
-    100% { text-shadow: 0 0 24px #ffd54f, 0 0 8px #fff; }
+    0% { 
+        text-shadow: 0 0 8px #ffd54f, 0 0 2px #fff;
+        transform: scale(1);
+    }
+    100% { 
+        text-shadow: 0 0 24px #ffd54f, 0 0 8px #fff;
+        transform: scale(1.1);
+    }
 } 

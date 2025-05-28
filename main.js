@@ -290,13 +290,12 @@ animate();
 window.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('overlay');
     const grattisBtn = document.getElementById('grattisBtn');
-    const confettiCanvas = document.getElementById('confetti-canvas');
     const mainCanvas = document.getElementById('canvas');
     const controlPanel = document.querySelector('.control-panel');
 
     // Hide everything except overlay at start
     overlay.style.display = 'flex';
-    confettiCanvas.style.display = 'none';
+
     mainCanvas.style.display = 'none';
     controlPanel.style.display = 'none';
 
@@ -305,12 +304,9 @@ window.addEventListener('DOMContentLoaded', () => {
         overlay.style.display = 'none';
         mainCanvas.style.display = 'block';
         controlPanel.style.display = 'block';
-        confettiCanvas.style.display = 'block';
-        startConfetti();
+
         // Hide confetti after 3.5s
-        setTimeout(() => {
-            confettiCanvas.style.display = 'none';
-        }, 3500);
+
     });
 
     // Safe switch buttons
@@ -324,55 +320,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-
-// --- Confetti effect ---
-function startConfetti() {
-    const canvas = document.getElementById('confetti-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const colors = ['#e57373', '#f06292', '#ba68c8', '#64b5f6', '#4db6ac', '#81c784', '#ffd54f', '#ffb74d', '#a1887f', '#90a4ae'];
-    const confettiCount = 180;
-    const confetti = [];
-    for (let i = 0; i < confettiCount; i++) {
-        confetti.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * -canvas.height,
-            r: 6 + Math.random() * 8,
-            d: 8 + Math.random() * 8,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            tilt: Math.random() * 10 - 10,
-            tiltAngle: 0,
-            tiltAngleIncremental: (Math.random() * 0.07) + 0.05,
-            speed: 2 + Math.random() * 3
-        });
-    }
-    let angle = 0;
-    let animationFrame;
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        angle += 0.01;
-        for (let i = 0; i < confetti.length; i++) {
-            let c = confetti[i];
-            c.y += (Math.cos(angle + c.d) + 1 + c.speed) * 0.7;
-            c.x += Math.sin(angle);
-            c.tiltAngle += c.tiltAngleIncremental;
-            c.tilt = Math.sin(c.tiltAngle) * 15;
-            ctx.beginPath();
-            ctx.lineWidth = c.r;
-            ctx.strokeStyle = c.color;
-            ctx.moveTo(c.x + c.tilt + c.r / 3, c.y);
-            ctx.lineTo(c.x + c.tilt, c.y + c.tilt + c.r);
-            ctx.stroke();
-        }
-        animationFrame = requestAnimationFrame(draw);
-    }
-    draw();
-    setTimeout(() => {
-        cancelAnimationFrame(animationFrame);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }, 3400);
-}
 
 // On first load, load the default safe
 loadSafe(currentSafe); 
