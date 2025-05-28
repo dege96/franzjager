@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // Scene setup
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xc9a6a6);
+scene.background = new THREE.Color(0x000000);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#canvas'),
@@ -134,7 +134,7 @@ document.getElementById('backgroundColor').addEventListener('input', (e) => {
 });
 
 // Set initial background color
-document.body.style.background = '#c9a6a6';
+document.body.style.background = '#000000';
 
 // Lighting controls
 document.getElementById('ambientLight').addEventListener('input', (e) => {
