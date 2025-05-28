@@ -25,7 +25,7 @@ textureLoader.load('logo.png', (texture) => {
     const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
     const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
     logoPlane = new THREE.Mesh(geometry, material);
-    logoPlane.position.set(0, 0, -2.5); // Place behind the safe
+    logoPlane.position.set(0, 2, -2.5); // Place behind the safe
     scene.add(logoPlane);
 });
 
