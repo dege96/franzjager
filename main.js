@@ -57,8 +57,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // Camera position
-let cameraDistance = 5;
-let cameraHeight = 0.5;
+camera.position.z = 5;
 
 // Load 3D model
 const loader = new GLTFLoader();
@@ -117,10 +116,8 @@ function loadSafe(safeFile) {
             if (gltf.animations && gltf.animations.length) {
                 mixer = new THREE.AnimationMixer(model);
                 action = mixer.clipAction(gltf.animations[0]);
-                action.setLoop(THREE.LoopRepeat);
-                action.clampWhenFinished = false;
-                action.timeScale = 0.5; // Slower animation
-                action.play();
+                action.setLoop(THREE.LoopOnce);
+                action.clampWhenFinished = true;
             }
         },
         undefined,
@@ -178,7 +175,7 @@ document.getElementById('fillLight2').addEventListener('input', (e) => {
 // Camera controls
 document.getElementById('cameraDistance').addEventListener('input', (e) => {
     const distance = parseFloat(e.target.value);
-    cameraDistance = distance;
+    camera.position.z = distance;
 });
 
 // Animation speed control
@@ -220,6 +217,28 @@ function playAnimation() {
 // Toggle animation direction
 toggleButton.addEventListener('click', playAnimation);
 
+// Click event handler
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('click', (event) => {
+    if (isAnimating || !model || !mixer) return;
+
+    // Calculate mouse position in normalized device coordinates
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // Update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+
+    // Calculate objects intersecting the picking ray
+    const intersects = raycaster.intersectObject(model, true);
+
+    if (intersects.length > 0) {
+        playAnimation();
+    }
+});
+
 // Handle window resize
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -259,15 +278,6 @@ function animate() {
         if (model.position.y > bounds.y.max || model.position.y < bounds.y.min) {
             direction.y *= -1;
         }
-
-        // --- Camera follows the front of the safe ---
-        // Calculate camera position in a circle around the model
-        const angle = model.rotation.y;
-        const target = model.position;
-        camera.position.x = target.x + Math.sin(angle) * cameraDistance;
-        camera.position.z = target.z + Math.cos(angle) * cameraDistance;
-        camera.position.y = target.y + cameraHeight;
-        camera.lookAt(target.x, target.y, target.z);
     }
     
     controls.update();

@@ -210,4 +210,38 @@ body {
     background: #444;
     color: #ffd54f;
     transform: scale(1.04);
+}
+
+.mystic-btn {
+    background: linear-gradient(135deg, #181818 70%, #333 100%);
+    color: #ffd54f;
+    border: 2px solid #222;
+    box-shadow: 0 0 32px 0 rgba(255, 213, 79, 0.12), 0 2px 24px 0 rgba(0,0,0,0.18);
+    letter-spacing: 2.5px;
+    position: relative;
+    transition: background 0.3s, color 0.2s, box-shadow 0.2s, border 0.2s;
+}
+.mystic-btn:hover {
+    background: linear-gradient(135deg, #222 60%, #444 100%);
+    color: #fff;
+    border: 2px solid #ffd54f;
+    box-shadow: 0 0 48px 0 #ffd54f44, 0 2px 32px 0 #000a;
+}
+.mystic-btn i {
+    margin-right: 0.7em;
+    color: #ffd54f;
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+.mystery {
+    color: #ffd54f;
+    font-size: 1.2em;
+    margin-left: 0.5em;
+    animation: pulseMystery 1.2s infinite alternate;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+}
+@keyframes pulseMystery {
+    0% { text-shadow: 0 0 8px #ffd54f, 0 0 2px #fff; }
+    100% { text-shadow: 0 0 24px #ffd54f, 0 0 8px #fff; }
 } 
