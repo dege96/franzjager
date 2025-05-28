@@ -30,11 +30,11 @@ textureLoader.load('logo.png', (texture) => {
 });
 
 // Enhanced Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
 scene.add(ambientLight);
 
 // Main directional light (sun-like)
-const mainLight = new THREE.DirectionalLight(0xffffff, 10);
+const mainLight = new THREE.DirectionalLight(0xffffff, 20);
 mainLight.position.set(5, 5, 5);
 mainLight.castShadow = true;
 mainLight.shadow.mapSize.width = 2048;
@@ -44,11 +44,11 @@ mainLight.shadow.camera.far = 50;
 scene.add(mainLight);
 
 // Additional fill lights
-const fillLight1 = new THREE.DirectionalLight(0xffffff, 0.3);
+const fillLight1 = new THREE.DirectionalLight(0xffffff, 2);
 fillLight1.position.set(-5, 3, -5);
 scene.add(fillLight1);
 
-const fillLight2 = new THREE.DirectionalLight(0xffffff, 0.2);
+const fillLight2 = new THREE.DirectionalLight(0xffffff, 1.2);
 fillLight2.position.set(0, -5, 0);
 scene.add(fillLight2);
 
@@ -57,7 +57,8 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // Camera position
-camera.position.z = 5;
+let cameraDistance = 5;
+let cameraHeight = 0.5;
 
 // Load 3D model
 const loader = new GLTFLoader();
@@ -77,36 +78,57 @@ let bounds = {
 };
 let direction = { x: 1, y: 1 };
 
-loader.load(
-    'Money_case.glb',
-    (gltf) => {
-        model = gltf.scene;
-        scene.add(model);
-        
-        // Center the model
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
-        model.position.sub(center);
-        
-        // Scale the model if needed
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 2 / maxDim;
-        model.scale.multiplyScalar(scale);
-
-        // Setup animation mixer
-        if (gltf.animations && gltf.animations.length) {
-            mixer = new THREE.AnimationMixer(model);
-            action = mixer.clipAction(gltf.animations[0]);
-            action.setLoop(THREE.LoopOnce);
-            action.clampWhenFinished = true;
-        }
-    },
-    undefined,
-    (error) => {
-        console.error('An error happened while loading the model:', error);
+// --- Safe switching logic ---
+let currentSafe = 'Money_case.glb';
+function loadSafe(safeFile) {
+    // Remove current model
+    if (model) {
+        scene.remove(model);
+        model.traverse((child) => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(m => m.dispose());
+                } else {
+                    child.material.dispose();
+                }
+            }
+        });
+        model = null;
+        mixer = null;
+        action = null;
     }
-);
+    // Load new model
+    loader.load(
+        safeFile,
+        (gltf) => {
+            model = gltf.scene;
+            scene.add(model);
+            // Center the model
+            const box = new THREE.Box3().setFromObject(model);
+            const center = box.getCenter(new THREE.Vector3());
+            model.position.sub(center);
+            // Scale the model if needed
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 2 / maxDim;
+            model.scale.multiplyScalar(scale);
+            // Setup animation mixer
+            if (gltf.animations && gltf.animations.length) {
+                mixer = new THREE.AnimationMixer(model);
+                action = mixer.clipAction(gltf.animations[0]);
+                action.setLoop(THREE.LoopRepeat);
+                action.clampWhenFinished = false;
+                action.timeScale = 0.5; // Slower animation
+                action.play();
+            }
+        },
+        undefined,
+        (error) => {
+            console.error('An error happened while loading the model:', error);
+        }
+    );
+}
 
 // Control Panel Setup
 const settingsButton = document.getElementById('settingsButton');
@@ -156,7 +178,7 @@ document.getElementById('fillLight2').addEventListener('input', (e) => {
 // Camera controls
 document.getElementById('cameraDistance').addEventListener('input', (e) => {
     const distance = parseFloat(e.target.value);
-    camera.position.z = distance;
+    cameraDistance = distance;
 });
 
 // Animation speed control
@@ -198,28 +220,6 @@ function playAnimation() {
 // Toggle animation direction
 toggleButton.addEventListener('click', playAnimation);
 
-// Click event handler
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-window.addEventListener('click', (event) => {
-    if (isAnimating || !model || !mixer) return;
-
-    // Calculate mouse position in normalized device coordinates
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // Update the picking ray with the camera and mouse position
-    raycaster.setFromCamera(mouse, camera);
-
-    // Calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObject(model, true);
-
-    if (intersects.length > 0) {
-        playAnimation();
-    }
-});
-
 // Handle window resize
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -259,6 +259,15 @@ function animate() {
         if (model.position.y > bounds.y.max || model.position.y < bounds.y.min) {
             direction.y *= -1;
         }
+
+        // --- Camera follows the front of the safe ---
+        // Calculate camera position in a circle around the model
+        const angle = model.rotation.y;
+        const target = model.position;
+        camera.position.x = target.x + Math.sin(angle) * cameraDistance;
+        camera.position.z = target.z + Math.cos(angle) * cameraDistance;
+        camera.position.y = target.y + cameraHeight;
+        camera.lookAt(target.x, target.y, target.z);
     }
     
     controls.update();
@@ -292,6 +301,17 @@ window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             confettiCanvas.style.display = 'none';
         }, 3500);
+    });
+
+    // Safe switch buttons
+    document.querySelectorAll('.safe-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const safeFile = btn.getAttribute('data-safe');
+            if (safeFile && safeFile !== currentSafe) {
+                currentSafe = safeFile;
+                loadSafe(safeFile);
+            }
+        });
     });
 });
 
@@ -342,4 +362,7 @@ function startConfetti() {
         cancelAnimationFrame(animationFrame);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }, 3400);
-} 
+}
+
+// On first load, load the default safe
+loadSafe(currentSafe); 
